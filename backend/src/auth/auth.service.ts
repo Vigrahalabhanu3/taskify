@@ -90,15 +90,14 @@ export class AuthService {
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
         process.env.FRONTEND_URL ||
-        'http://localhost:3000';
+        'https://taskify-ei2ph9pta-bhanuprasad-s-projects.vercel.app';
       const resetUrl = `${frontendUrl.replace(/\/$/, '')}/reset-password?token=${resetToken}`;
 
-      try {
-        await this.emailService.sendPasswordResetEmail(user.email, user.name, resetUrl);
-        this.logger.log(`Password reset email dispatched successfully to ${user.email}`);
-      } catch (err: any) {
-        this.logger.error(`Error sending password reset email: ${err.message}`);
-      }
+      // Non-blocking async email dispatch so HTTP response returns instantly
+      this.emailService
+        .sendPasswordResetEmail(user.email, user.name || 'Taskify User', resetUrl)
+        .then(() => this.logger.log(`Password reset email dispatched successfully to ${user.email}`))
+        .catch((err: any) => this.logger.error(`Error sending password reset email: ${err.message}`));
     }
 
     return {

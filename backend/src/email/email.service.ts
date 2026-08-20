@@ -8,8 +8,6 @@ export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
-    const port = Number(this.configService.get<number>('SMTP_PORT', 587));
     const user = this.configService.get<string>('SMTP_USER');
     let pass = this.configService.get<string>('SMTP_PASS');
 
@@ -19,13 +17,13 @@ export class EmailService {
 
     if (user && pass && !user.includes('example.com') && pass !== 'testpass') {
       this.transporter = nodemailer.createTransport({
-        host: host || 'smtp.gmail.com',
-        port: port || 587,
-        secure: port === 465,
+        service: 'gmail',
         auth: { user, pass },
-        tls: { rejectUnauthorized: false },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       });
-      this.logger.log(`SMTP transporter initialized successfully for ${user}`);
+      this.logger.log(`Gmail transporter initialized successfully for ${user}`);
     } else {
       this.logger.log('SMTP configuration in test/fallback mode. Emails will be logged to console.');
     }
