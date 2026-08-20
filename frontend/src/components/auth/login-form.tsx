@@ -32,8 +32,8 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'nageswari@email.com',
-      password: 'Password123!',
+      email: '',
+      password: '',
     },
   });
 
@@ -71,7 +71,7 @@ export function LoginForm() {
         <Input
           label="Email Address"
           type="email"
-          placeholder="nageswari@email.com"
+          placeholder="your.email@example.com"
           leftIcon={<Mail className="w-4 h-4" />}
           error={errors.email?.message}
           {...register('email')}

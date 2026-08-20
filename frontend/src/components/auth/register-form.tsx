@@ -87,7 +87,7 @@ export function RegisterForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
           label="Full Name *"
-          placeholder="Nageswari"
+          placeholder="Your Full Name"
           leftIcon={<User className="w-4 h-4" />}
           error={errors.name?.message}
           {...register('name')}
@@ -96,7 +96,7 @@ export function RegisterForm() {
         <Input
           label="Email Address *"
           type="email"
-          placeholder="nageswari@email.com"
+          placeholder="your.email@example.com"
           leftIcon={<Mail className="w-4 h-4" />}
           error={errors.email?.message}
           {...register('email')}
