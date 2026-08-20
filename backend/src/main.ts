@@ -14,7 +14,19 @@ async function bootstrap() {
 
   // Configure CORS
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      if (!origin) return callback(null, true);
+      if (
+        origin === frontendUrl ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
