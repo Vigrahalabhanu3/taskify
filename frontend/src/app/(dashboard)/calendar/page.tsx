@@ -34,6 +34,15 @@ export default function CalendarPage() {
     return tasks.filter((task) => task.dueDate && isSameDay(new Date(task.dueDate), day));
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-20 bg-slate-100 rounded-2xl animate-pulse" />
+        <div className="h-[500px] bg-slate-100 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header & Controls */}

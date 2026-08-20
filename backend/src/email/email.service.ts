@@ -14,12 +14,23 @@ export class EmailService {
     const pass = this.configService.get<string>('SMTP_PASS');
 
     if (host && user && pass && !user.includes('example.com') && pass !== 'testpass') {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      });
+      const isGmail = host.includes('gmail.com');
+      this.transporter = nodemailer.createTransport(
+        isGmail
+          ? {
+              service: 'gmail',
+              auth: { user, pass },
+              tls: { rejectUnauthorized: false },
+            }
+          : {
+              host,
+              port,
+              secure: port === 465,
+              auth: { user, pass },
+              tls: { rejectUnauthorized: false },
+            },
+      );
+      this.logger.log(`SMTP transporter initialized successfully for ${user}`);
     } else {
       this.logger.log('SMTP configuration in test/fallback mode. Emails will be logged to console.');
     }

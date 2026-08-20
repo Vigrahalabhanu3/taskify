@@ -7,13 +7,28 @@ import { User, Mail, Shield, CheckCircle, Clock, Calendar, Award } from 'lucide-
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
-  const { data: stats } = useTaskStatsQuery();
+  const { data: stats, isLoading } = useTaskStatsQuery();
 
   const total = stats?.total || 0;
   const done = stats?.done || 0;
   const inProgress = stats?.inProgress || 0;
 
   const completionRate = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="h-36 bg-slate-100 rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
+          <div className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
+          <div className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
+          <div className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
+        </div>
+        <div className="h-64 bg-slate-100 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
