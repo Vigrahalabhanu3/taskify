@@ -21,13 +21,29 @@ export class UsersService {
   }
 
   async findByResetToken(token: string): Promise<UserDocument | null> {
-    return this.userModel
-      .findOne({
-        resetPasswordToken: token,
-        resetPasswordExpires: { $gt: new Date() },
-      })
+    if (!token) return null;
+    const cleanToken = decodeURIComponent(token.trim());
+    
+    let user = await this.userModel
+      .findOne({ resetPasswordToken: cleanToken })
       .select('+password')
       .exec();
+
+    if (!user) {
+      user = await this.userModel
+        .findOne({ resetPasswordToken: token.trim() })
+        .select('+password')
+        .exec();
+    }
+
+    if (user && user.resetPasswordExpires) {
+      const expiresTime = new Date(user.resetPasswordExpires).getTime();
+      if (expiresTime < Date.now()) {
+        return null;
+      }
+    }
+
+    return user;
   }
 
   async saveResetToken(userId: string, token: string, expires: Date): Promise<void> {

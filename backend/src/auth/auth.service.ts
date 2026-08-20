@@ -80,10 +80,13 @@ export class AuthService {
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
-    const user = await this.usersService.findByEmail(forgotPasswordDto.email);
+    const rawEmail = forgotPasswordDto.email;
+    const cleanEmail = rawEmail ? rawEmail.trim().toLowerCase() : '';
+    const user = await this.usersService.findByEmail(cleanEmail);
+    
     if (user) {
       const resetToken = crypto.randomBytes(32).toString('hex');
-      const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+      const resetExpires = new Date(Date.now() + 24 * 3600000); // 24 hours validity
 
       await this.usersService.saveResetToken(user._id.toString(), resetToken, resetExpires);
 
@@ -108,7 +111,7 @@ export class AuthService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const rawToken = resetPasswordDto.token;
-    const cleanToken = rawToken ? rawToken.trim() : '';
+    const cleanToken = rawToken ? decodeURIComponent(rawToken.trim()) : '';
     const newPass = resetPasswordDto.password || (resetPasswordDto as any).newPassword;
 
     if (!cleanToken) {
