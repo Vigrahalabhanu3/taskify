@@ -8,8 +8,6 @@ export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
-    const port = Number(this.configService.get<number>('SMTP_PORT', 587));
     const user = this.configService.get<string>('SMTP_USER');
     let pass = this.configService.get<string>('SMTP_PASS');
 
@@ -19,13 +17,11 @@ export class EmailService {
 
     if (user && pass && !user.includes('example.com') && pass !== 'testpass') {
       this.transporter = nodemailer.createTransport({
-        host: host || 'smtp.gmail.com',
-        port: port || 587,
-        secure: port === 465,
+        service: 'gmail',
         auth: { user, pass },
         tls: { rejectUnauthorized: false },
       });
-      this.logger.log(`SMTP transporter initialized successfully for ${user}`);
+      this.logger.log(`SMTP transporter initialized with service 'gmail' for ${user}`);
     } else {
       this.logger.log('SMTP configuration in test/fallback mode. Emails will be logged to console.');
     }
@@ -289,7 +285,7 @@ export class EmailService {
 
     const from = this.configService.get<string>('EMAIL_FROM') || `"Taskify" <${user}>`;
 
-    // 1. Try Primary Transporter (configured from constructor)
+    // 1. Primary Transporter: Nodemailer service 'gmail'
     try {
       if (this.transporter) {
         await this.transporter.sendMail({ from, to, subject, html });
@@ -297,10 +293,10 @@ export class EmailService {
         return;
       }
     } catch (primaryErr: any) {
-      this.logger.warn(`Primary SMTP dispatch failed: ${primaryErr.message}. Retrying via fallback port 465 SSL...`);
+      this.logger.warn(`Primary Gmail service dispatch failed: ${primaryErr.message}. Retrying via fallback port 465 SSL...`);
     }
 
-    // 2. Fallback Transporter (Port 465 Direct SSL)
+    // 2. Fallback Transporter: Direct SMTP Port 465 SSL
     try {
       const fallbackTransporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',

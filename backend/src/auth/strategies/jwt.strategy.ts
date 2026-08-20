@@ -24,9 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User account no longer exists');
     }
     return {
-      userId: payload.sub,
-      email: payload.email,
-      name: payload.name,
+      userId: user._id.toString(),
+      email: user.email,
+      name: user.name || 'Taskify User',
     };
   }
 }

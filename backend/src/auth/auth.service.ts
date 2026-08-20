@@ -108,13 +108,25 @@ export class AuthService {
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const user = await this.usersService.findByResetToken(resetPasswordDto.token);
+    const rawToken = resetPasswordDto.token;
+    const cleanToken = rawToken ? rawToken.trim() : '';
+    const newPass = resetPasswordDto.password || (resetPasswordDto as any).newPassword;
+
+    if (!cleanToken) {
+      throw new BadRequestException('Reset token is missing from request');
+    }
+
+    if (!newPass || newPass.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters long');
+    }
+
+    const user = await this.usersService.findByResetToken(cleanToken);
     if (!user) {
-      throw new BadRequestException('Invalid or expired password reset token');
+      throw new BadRequestException('Invalid or expired password reset token. Please request a new reset link.');
     }
 
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(resetPasswordDto.password, saltRounds);
+    const hashedPassword = await bcrypt.hash(newPass, saltRounds);
 
     await this.usersService.updatePasswordAndClearToken(user._id.toString(), hashedPassword);
 
