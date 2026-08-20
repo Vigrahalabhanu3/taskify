@@ -1,164 +1,773 @@
 # Taskify – Full-Stack Task Management Application
 
-**Taskify** is a production-quality, multi-user task management application built with **NestJS**, **MongoDB (Mongoose)**, **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS**.
+Taskify is a secure, multi-user task management application built with **Next.js** and **NestJS**.
+
+The application allows authenticated users to create, manage, filter, sort, and track their tasks. Each task is private to the authenticated user who created it.
+
+## 🚀 Live Demo
+
+### Frontend
+https://taskify-ei2ph9pta-bhanuprasad-s-projects.vercel.app/
+
+### Backend API
+https://taskify-backend-map3.onrender.com
+
+### GitHub Repository
+https://github.com/Vigrahalabhanu3/taskify
 
 ---
 
-## 🌟 Key Features
+## ✨ Features
 
-1. **User Authentication & Authorization**:
-   - Secure registration and login.
-   - Passwords hashed using `bcrypt` (10 salt rounds).
-   - JWT authentication via NestJS Passport strategy.
-   - Next.js protected client & server routes.
-2. **Tenant Data Isolation & Security**:
-   - Strict database-level scoping (`{ _id: taskId, userId: req.user.id }`).
-   - Prevention of cross-tenant data leaks (attempting to access another user's task ID yields `404 Not Found`).
-   - Centralized NestJS `HttpExceptionFilter` and DTO validation via `class-validator` / `class-transformer`.
-   - File upload security: 5MB size limit and explicit MIME type restriction interceptor.
-   - Secure CORS setup.
-3. **Task Management (Full CRUD & Sorting)**:
-   - Create, list, detail view, edit, and delete tasks.
-   - Status tracking (`TODO`, `IN_PROGRESS`, `DONE`) with quick toggle.
-   - Priority levels (`LOW`, `MEDIUM`, `HIGH`).
-   - Due dates with relative time calculations.
-   - Server-side pagination (`page`, `limit`, `totalPages`, `hasNextPage`, `hasPreviousPage`), search, status/priority filtering, date range filters (`dueDateFrom`, `dueDateTo`), and explicit sorting UI controls (`sortBy`, `order`).
-4. **Third-Party Integrations**:
-   - **Cloudinary File Storage**: Secure attachment uploader (images, PDFs, documents up to 5MB).
-   - **OpenWeatherMap Weather Lookup**: Live weather forecast widget based on task `location`.
-   - **Email Service (Nodemailer / Resend)**: Non-blocking async emails sent on task creation and task completion (`DONE`).
-5. **Dashboard Analytics & UI**:
-   - Real-time Stats Cards (Total Tasks, To Do, In Progress, Done).
-   - Responsive modern UI design with purple accents, glassmorphism, loading skeletons, empty states, and modal dialogs.
-6. **Automated Testing Suite**:
-   - Jest unit and security boundary tests covering `AuthService`, `TasksService` CRUD & tenant isolation, and `WeatherService`.
+### Authentication & Security
+
+- User registration
+- User login
+- JWT-based authentication
+- bcrypt password hashing
+- Protected backend routes
+- Protected frontend routes
+- Logout
+- Forgot password
+- Password reset
+- Secure password reset tokens
+- Password reset token expiration
+- Generic password-reset response to reduce account enumeration
+- User-specific task authorization
+- Cross-user task access protection
+- DTO validation
+- MongoDB ObjectId validation
+- Environment-based secret management
+- CORS configuration
+
+### Task Management
+
+Authenticated users can:
+
+- Create tasks
+- View their tasks
+- View individual task details
+- Update tasks
+- Delete tasks
+- Change task status
+- Set task priority
+- Set due dates
+- Add descriptions
+- Add task locations
+- Upload attachments
+
+### Task Status
+
+- `TODO`
+- `IN_PROGRESS`
+- `DONE`
+
+### Task Priority
+
+- `LOW`
+- `MEDIUM`
+- `HIGH`
+
+### Search, Filtering, Sorting & Pagination
+
+- Search tasks
+- Filter by status
+- Filter by priority
+- Filter by due-date range
+- Sort by created date
+- Sort by due date
+- Sort by priority
+- Sort by title
+- Ascending and descending sorting
+- Server-side pagination
+
+### File Upload
+
+Taskify uses **Cloudinary** for file storage.
+
+- File upload
+- Multiple attachments
+- File metadata
+- Cloudinary CDN URLs
+- Attachment display
+- File download/open
+- Upload progress
+- File size validation
+- MIME type validation
+- Maximum upload size: `5 MB`
+
+### Weather Integration
+
+Taskify integrates with **OpenWeatherMap**.
+
+Weather information includes:
+
+- Temperature
+- Feels-like temperature
+- Weather condition
+- Humidity
+- Wind speed
+- Weather icon
+
+The OpenWeatherMap API key is kept on the backend.
+
+### Email Notifications
+
+Taskify uses **Nodemailer with SMTP**.
+
+Emails are sent for:
+
+- Task creation
+- Task completion
+- Password reset
+
+Task completion notification is triggered when a task changes to `DONE`.
+
+### Responsive UI
+
+- Desktop responsive layout
+- Tablet support
+- Mobile navigation
+- Mobile task cards
+- Responsive task filters
+- Responsive forms
+- Responsive task details
+- Loading states
+- Error states
+- Empty states
+- Form validation
+- Delete confirmation
 
 ---
 
-## 🏗️ Architecture & Project Structure
+## 🛠️ Technology Stack
 
-```
-Task-Flow/
-├── backend/                  # NestJS REST API Backend
+### Frontend
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Zustand
+- React Query
+- Axios
+- React Hook Form
+- Zod
+
+### Backend
+
+- NestJS
+- TypeScript
+- REST API
+- Passport
+- JWT
+- bcrypt
+- class-validator
+- class-transformer
+- Nodemailer
+
+### Database
+
+- MongoDB
+- Mongoose
+- MongoDB Atlas
+
+### Third-Party Services
+
+- Cloudinary
+- OpenWeatherMap
+- Gmail SMTP
+- Nodemailer
+
+### Deployment
+
+- Vercel – Frontend
+- Render – Backend
+- MongoDB Atlas – Database
+
+---
+
+## 🏗️ System Architecture
+
+```text
+                         ┌─────────────────────────┐
+                         │     User / Browser      │
+                         └────────────┬────────────┘
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │       Next.js           │
+                         │       Frontend          │
+                         │                         │
+                         │  Authentication         │
+                         │  Dashboard              │
+                         │  Task Management        │
+                         │  Filtering              │
+                         │  Sorting                │
+                         │  Pagination             │
+                         │  Zustand                │
+                         │  React Query            │
+                         └────────────┬────────────┘
+                                      │
+                               REST API + JWT
+                                      │
+                                      ▼
+                         ┌─────────────────────────┐
+                         │        NestJS           │
+                         │        Backend          │
+                         │                         │
+                         │  Auth Module            │
+                         │  Users Module           │
+                         │  Tasks Module           │
+                         │  Upload Module          │
+                         │  Weather Module         │
+                         │  Email Module           │
+                         └──────┬─────────┬────────┘
+                                │         │
+                    ┌───────────┘         └─────────────┐
+                    ▼                                   ▼
+          ┌────────────────────┐              ┌──────────────────┐
+          │    MongoDB Atlas   │              │    Cloudinary    │
+          │                    │              │                  │
+          │ Users              │              │ File Storage     │
+          │ Tasks              │              │ CDN              │
+          └────────────────────┘              └──────────────────┘
+                                │
+                     ┌──────────┴──────────┐
+                     ▼                     ▼
+          ┌──────────────────┐   ┌────────────────────┐
+          │   OpenWeatherMap │   │   Nodemailer SMTP  │
+          │                  │   │                    │
+          │ Weather Service  │   │ Email Service      │
+          └──────────────────┘   └────────────────────┘
+
+taskify/
+│
+├── backend/
 │   ├── src/
-│   │   ├── auth/            # Auth Controller, Service, JWT Strategy & Unit Tests
-│   │   ├── users/           # User Model Schema & Service
-│   │   ├── tasks/           # Task Model, CRUD Controller, Service & Security Tests
-│   │   ├── upload/          # Cloudinary File Upload Provider, Security Interceptor & Controller
-│   │   ├── weather/         # OpenWeatherMap Service, Controller & Tests
-│   │   ├── email/           # Nodemailer Email Notification Service
-│   │   ├── common/          # Filters, Guards, Decorators, Pipes & Interfaces
-│   │   └── config/          # Environment variable loaders
-│   ├── .env.example
-│   ├── .gitignore
-│   └── package.json
-└── frontend/                 # Next.js App Router Frontend
-    ├── src/
-    │   ├── app/             # (auth), (dashboard) pages & layouts
-    │   ├── components/      # UI, Auth, Dashboard, Task, Filters & Weather components
-    │   ├── hooks/           # TanStack React Query custom hooks
-    │   ├── lib/             # Axios API client, Zustand stores & utils
-    │   ├── store/           # Filter, Sorting & UI state stores
-    │   └── types/           # TypeScript interfaces & types
-    ├── .env.example
-    ├── .gitignore
-    └── package.json
-```
+│   │   ├── auth/
+│   │   │   ├── dto/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── auth.module.ts
+│   │   │   ├── jwt.strategy.ts
+│   │   │   └── jwt-auth.guard.ts
+│   │   │
+│   │   ├── users/
+│   │   │   ├── schemas/
+│   │   │   └── users.service.ts
+│   │   │
+│   │   ├── tasks/
+│   │   │   ├── dto/
+│   │   │   ├── schemas/
+│   │   │   ├── tasks.controller.ts
+│   │   │   └── tasks.service.ts
+│   │   │
+│   │   ├── upload/
+│   │   ├── weather/
+│   │   ├── email/
+│   │   ├── common/
+│   │   ├── config/
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   │
+│   ├── package.json
+│   └── .env.example
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── (auth)/
+│   │   │   │   ├── login/
+│   │   │   │   ├── register/
+│   │   │   │   ├── forgot-password/
+│   │   │   │   └── reset-password/
+│   │   │   │
+│   │   │   └── (dashboard)/
+│   │   │       ├── dashboard/
+│   │   │       ├── tasks/
+│   │   │       ├── calendar/
+│   │   │       ├── profile/
+│   │   │       └── settings/
+│   │   │
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── store/
+│   │   └── types/
+│   │
+│   ├── package.json
+│   └── .env.example
+│
+├── README.md
+└── .gitignore
+
+🗄️ Database Design
+User
+User
+├── _id
+├── name
+├── email
+├── password
+├── resetPasswordToken
+├── resetPasswordExpires
+├── createdAt
+└── updatedAt
+Task
+Task
+├── _id
+├── title
+├── description
+├── status
+├── priority
+├── dueDate
+├── location
+├── attachments
+├── userId
+├── createdAt
+└── updatedAt
+
+Each task belongs to the authenticated user through:
+
+Task.userId → User._id
+🔐 User Isolation
+
+Taskify enforces user-level authorization for task operations.
+
+Authenticated User
+        │
+        ▼
+    authenticated userId
+        │
+        ▼
+┌──────────────────────────────┐
+│        Task Query            │
+│                              │
+│  task ID + authenticated ID  │
+└──────────────────────────────┘
+
+A user cannot access, update, or delete another user's task by changing the task ID.
+
+🔑 Authentication Flow
+Registration
+User
+ │
+ ▼
+Register Request
+ │
+ ▼
+DTO Validation
+ │
+ ▼
+Check Existing Email
+ │
+ ▼
+Hash Password with bcrypt
+ │
+ ▼
+Save User
+ │
+ ▼
+Generate JWT
+ │
+ ▼
+Return Safe User Response
+Login
+User
+ │
+ ▼
+Login Request
+ │
+ ▼
+Validate Credentials
+ │
+ ▼
+Compare Password using bcrypt
+ │
+ ▼
+Generate JWT
+ │
+ ▼
+Store Authentication State
+ │
+ ▼
+Protected API Requests
+🔄 Task Creation Flow
+Task Form
+    │
+    ▼
+Frontend Validation
+    │
+    ▼
+NestJS REST API
+    │
+    ▼
+JWT Authentication
+    │
+    ▼
+DTO Validation
+    │
+    ▼
+Task Service
+    │
+    ├──────────────► MongoDB
+    │
+    ├──────────────► Cloudinary
+    │
+    ├──────────────► OpenWeatherMap
+    │
+    └──────────────► Email Service
 
 ---
 
-## 🛠️ Quick Start Guide
 
-### Prerequisites
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- MongoDB instance (MongoDB Atlas or local `mongodb://localhost:27017/taskify`)
+# 🔌 API Documentation
 
-### 1. Backend Setup & Tests
-```bash
-cd backend
-npm install
-cp .env.example .env
-npm test            # Run automated Jest unit & security tests
-npm run start:dev   # Start backend development server
-```
-Backend runs at `http://localhost:4000`.
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-cp .env.example .env.local
-npm run dev         # Start Next.js dev server
-```
-Frontend runs at `http://localhost:3000`.
+## Authentication APIs
 
----
 
-## 🔑 Environment Variables Reference
+### Register User
 
-### Backend (`backend/.env`)
-```env
+
+```http
+POST /auth/register
+
+Creates a new user account.
+
+Login User
+POST /auth/login
+
+Authenticates the user and returns a JWT access token.
+
+Forgot Password
+POST /auth/forgot-password
+
+Starts the password-reset process.
+
+For security, the API returns a generic response whether or not the email exists.
+
+Reset Password
+POST /auth/reset-password
+
+Resets the user's password using a valid reset token.
+
+📋 Task APIs
+
+All task endpoints require JWT authentication.
+
+Get Tasks
+GET /tasks
+
+Supports:
+
+Search
+Status filtering
+Priority filtering
+Due-date filtering
+Sorting
+Pagination
+
+Example:
+
+GET /tasks?page=1&limit=10&status=TODO&priority=HIGH
+Create Task
+POST /tasks
+
+Creates a task for the authenticated user.
+
+Get Task
+GET /tasks/:id
+
+Returns a task only if it belongs to the authenticated user.
+
+Update Task
+PATCH /tasks/:id
+
+Updates an existing task owned by the authenticated user.
+
+Delete Task
+DELETE /tasks/:id
+
+Deletes an existing task owned by the authenticated user.
+
+📎 Upload API
+Upload Attachment
+POST /upload
+
+Uploads a file to Cloudinary.
+
+Maximum upload size:
+
+5 MB
+
+Supported files are validated by MIME type before upload.
+
+🌤️ Weather API
+Get Weather
+GET /weather
+
+Retrieves current weather information based on the task location.
+
+⚙️ Environment Variables
+Backend
+
+Create:
+
+backend/.env
+
+Example:
+
 PORT=4000
 NODE_ENV=development
-MONGODB_URI=mongodb://127.0.0.1:27017/taskify
-JWT_SECRET=super_secret_jwt_signing_key_taskify_2026
+
+
+MONGODB_URI=
+JWT_SECRET=your_strong_random_jwt_secret
 JWT_EXPIRES_IN=7d
+
+
 FRONTEND_URL=http://localhost:3000
 
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
 
-OPENWEATHER_API_KEY=your_openweather_api_key
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+
+OPENWEATHER_API_KEY=
+
 
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-EMAIL_FROM="Taskify Team <noreply@taskify.app>"
-```
+SMTP_USER=
+SMTP_PASS=
+EMAIL_FROM=
+Frontend
 
-### Frontend (`frontend/.env.local`)
-```env
+Create:
+
+frontend/.env.local
+
+Example:
+
 NEXT_PUBLIC_API_URL=http://localhost:4000
-```
+Production Frontend
 
----
+The deployed frontend uses:
 
-## 📡 API Endpoints Summary
+NEXT_PUBLIC_API_URL=https://taskify-backend-map3.onrender.com
+Security
 
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/auth/register` | Register a new user | No |
-| `POST` | `/auth/login` | Login user & get JWT | No |
-| `GET` | `/tasks` | List user's tasks (filters, pagination, sorting) | Yes (Bearer) |
-| `POST` | `/tasks` | Create a new task (triggers creation email) | Yes (Bearer) |
-| `GET` | `/tasks/stats` | Get task counts for dashboard overview | Yes (Bearer) |
-| `GET` | `/tasks/:id` | Get single task details (tenant isolated) | Yes (Bearer) |
-| `PATCH` | `/tasks/:id` | Update task (triggers completion email if DONE) | Yes (Bearer) |
-| `DELETE` | `/tasks/:id` | Delete task | Yes (Bearer) |
-| `POST` | `/upload` | Upload attachment file to Cloudinary (5MB limit) | Yes (Bearer) |
-| `GET` | `/weather` | Fetch current weather for location | Yes (Bearer) |
+Never commit:
 
----
+.env
+.env.local
 
-## 🚀 Deployment Guide
+Never expose the following credentials in frontend code or GitHub:
 
-- **Frontend (Vercel)**:
-  1. Import `frontend` directory into Vercel.
-  2. Set `NEXT_PUBLIC_API_URL` to your production backend URL.
-  3. Deploy.
-- **Backend (Render / Railway / Fly.io)**:
-  1. Import `backend` directory.
-  2. Set build command: `npm run build`, start command: `node dist/main.js`.
-  3. Configure production environment variables (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`, `OPENWEATHER_*`, `SMTP_*`).
-- **Database**: MongoDB Atlas Cluster with user index enabled.
+MongoDB connection string
+JWT secret
+Cloudinary API secret
+OpenWeatherMap API key
+SMTP password
 
----
+Production credentials are configured through the deployment platform environment settings.
 
-## ⚖️ Trade-offs & Future Improvements
+💻 Local Development
+1. Clone the Repository
+git clone https://github.com/Vigrahalabhanu3/taskify.git
+cd taskify
+2. Backend Setup
+cd backend
+npm install
 
-1. **Email Service Queue**: Currently email dispatch is non-blocking async. In high-scale production, integrating Redis BullMQ queue would ensure guaranteed retries and rate limit protection.
-2. **Weather Caching**: Weather lookups use in-memory React Query stale-time. Adding server-side Redis caching for OpenWeatherMap requests would reduce third-party API calls across multiple users querying the same city.
-3. **RefreshToken Flow**: The app uses JWT tokens with 7-day expiration. Implementing HTTP-only refresh token rotation would enhance security further.
+Create:
+
+.env
+
+Configure the required backend environment variables.
+
+Start the backend:
+
+npm run start:dev
+
+Backend runs on:
+
+http://localhost:4000
+3. Frontend Setup
+
+Open another terminal:
+
+cd frontend
+npm install
+
+Create:
+
+.env.local
+
+Add:
+
+NEXT_PUBLIC_API_URL=http://localhost:4000
+
+Start the frontend:
+
+npm run dev
+
+Frontend runs on:
+
+http://localhost:3000
+🧪 Testing
+Backend Unit Tests
+cd backend
+npm test
+
+Current verified result:
+
+4 Test Suites
+16 Tests Passed
+
+The test suite covers important areas including:
+
+Authentication
+Password reset
+Task operations
+User isolation
+Weather service
+Backend Production Build
+cd backend
+npm run build
+
+The production build completes successfully.
+
+Frontend Production Build
+cd frontend
+npm run build
+
+The production build completes successfully
+
+
+
+
+# 🚀 Deployment
+
+## Frontend – Vercel
+
+The Next.js frontend is deployed using Vercel.
+
+### Production URL
+
+https://taskify-ei2ph9pta-bhanuprasad-s-projects.vercel.app/
+
+### Production API Configuration
+
+```env
+NEXT_PUBLIC_API_URL=https://taskify-backend-map3.onrender.com
+Backend – Render
+
+The NestJS backend is deployed using Render.
+
+Production URL
+
+https://taskify-backend-map3.onrender.com
+
+Backend credentials and secrets are configured through Render environment variables and are not committed to GitHub.
+
+Database – MongoDB Atlas
+
+MongoDB Atlas is used as the production database.
+
+The database connection is configured through:
+
+MONGODB_URI
+
+The database credentials are stored securely in the deployment environment.
+
+🔄 Complete Application Workflow
+                    ┌──────────────┐
+                    │   Register   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │    Login     │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Dashboard   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ Create Task  │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+         Cloudinary   OpenWeather   Nodemailer
+         Attachment      Weather      Email
+              │            │            │
+              └────────────┼────────────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Edit Task   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ Mark as DONE │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ Done Email   │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ Delete Task  │
+                    └──────────────┘
+
+### Now your README is complete
+
+You should now have:
+
+```text
+README.md
+│
+├── Project Overview
+├── Live Demo
+├── Features
+├── Technology Stack
+├── System Architecture
+├── Project Structure
+├── Database Design
+├── User Isolation
+├── Authentication Flow
+├── Task Creation Flow
+├── API Documentation
+├── Environment Variables
+├── Local Development
+├── Testing
+├── Security Verification
+├── Deployment
+├── Application Workflow
+├── Assessment Compliance
+├── Technical Trade-offs
+├── Future Improvements
+├── Verification Summary
+└── Author
+
+👨‍💻 Author
+Bhanu Prasad
+
+GitHub:
+
+https://github.com/Vigrahalabhanu3
+
+Project Repository:
+
+https://github.com/Vigrahalabhanu3/taskify
+
