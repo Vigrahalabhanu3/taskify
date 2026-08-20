@@ -90,9 +90,12 @@ export class AuthService {
       const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
       const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
 
-      this.emailService
-        .sendPasswordResetEmail(user.email, user.name, resetUrl)
-        .catch((err) => this.logger.error(`Error sending password reset email: ${err.message}`));
+      try {
+        await this.emailService.sendPasswordResetEmail(user.email, user.name, resetUrl);
+        this.logger.log(`Password reset email dispatched successfully to ${user.email}`);
+      } catch (err: any) {
+        this.logger.error(`Error sending password reset email: ${err.message}`);
+      }
     }
 
     return {
