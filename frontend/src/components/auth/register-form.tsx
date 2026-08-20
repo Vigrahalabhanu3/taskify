@@ -71,7 +71,7 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-xl border border-slate-100">
+    <div className="w-full max-w-md p-5 sm:p-8 bg-white rounded-3xl shadow-xl border border-slate-100">
       <div className="mb-8 text-center sm:text-left">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">Create Account ✨</h2>
         <p className="text-sm text-slate-500 mt-1">Sign up to start organizing and tracking your tasks</p>

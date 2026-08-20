@@ -89,7 +89,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Main Task Card */}
-      <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-md space-y-8">
+      <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-md space-y-6 sm:space-y-8">
         {/* Header: Title & Status */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-slate-100">
           <div>

@@ -9,7 +9,7 @@ import { WeatherWidget } from '../weather/weather-widget';
 import { EmptyState } from '../ui/empty-state';
 import { TableSkeleton } from '../ui/skeleton';
 import { formatDate } from '@/lib/utils';
-import { Edit2, Trash2, Eye, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit2, Trash2, Eye, MapPin, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { TaskStatus } from '@/types/task.types';
 
 interface TaskTableProps {
@@ -78,7 +78,76 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* Mobile Card List (visible on screens < 768px) */}
+      <div className="block md:hidden divide-y divide-slate-100">
+        {tasks.map((task) => (
+          <div key={task._id} className="p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <Link
+                  href={`/tasks/${task._id}`}
+                  className="font-bold text-slate-900 text-base hover:text-indigo-600 transition block line-clamp-1"
+                >
+                  {task.title}
+                </Link>
+                {task.description && (
+                  <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{task.description}</p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Link
+                  href={`/tasks/${task._id}`}
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                  title="View"
+                >
+                  <Eye className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={`/tasks/${task._id}/edit`}
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                  title="Edit"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => handleDelete(task._id)}
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button onClick={() => handleStatusToggle(task._id, task.status)} className="cursor-pointer">
+                <TaskStatusBadge status={task.status} />
+              </button>
+              <TaskPriorityBadge priority={task.priority} />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-50 text-xs text-slate-500">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  {formatDate(task.dueDate)}
+                </span>
+                {task.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    {task.location}
+                  </span>
+                )}
+              </div>
+              <WeatherWidget location={task.location} compact />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View (visible on screens >= 768px) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-200/80 bg-slate-50/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -107,7 +176,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
                   <button
                     onClick={() => handleStatusToggle(task._id, task.status)}
                     title="Click to toggle status"
-                    className="hover:scale-105 transition"
+                    className="hover:scale-105 transition cursor-pointer"
                   >
                     <TaskStatusBadge status={task.status} />
                   </button>
@@ -155,7 +224,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
                       </Link>
                       <button
                         onClick={() => handleDelete(task._id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                         title="Delete task"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -170,7 +239,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/40 text-xs text-slate-500">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/40 text-xs text-slate-500">
         <div>
           Showing <strong className="text-slate-800">{startRecord}</strong> to{' '}
           <strong className="text-slate-800">{endRecord}</strong> of{' '}
@@ -181,7 +250,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -191,7 +260,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
               <button
                 key={pageNum}
                 onClick={() => setPage(pageNum)}
-                className={`w-7 h-7 rounded-lg text-xs font-semibold transition ${
+                className={`w-7 h-7 rounded-lg text-xs font-semibold transition cursor-pointer ${
                   page === pageNum
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -204,7 +273,7 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
           <button
             onClick={() => setPage(Math.min(meta.totalPages, page + 1))}
             disabled={page === meta.totalPages || meta.totalPages === 0}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

@@ -10,10 +10,14 @@ import {
 } from '@/types/task.types';
 
 export function useTasksQuery(params: TaskFilterParams) {
+  const cleanedParams = Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v !== '' && v !== undefined && v !== null),
+  );
+
   return useQuery<PaginatedTaskResponse>({
-    queryKey: ['tasks', params],
+    queryKey: ['tasks', cleanedParams],
     queryFn: async () => {
-      const { data } = await apiClient.get('/tasks', { params });
+      const { data } = await apiClient.get('/tasks', { params: cleanedParams });
       return data;
     },
   });

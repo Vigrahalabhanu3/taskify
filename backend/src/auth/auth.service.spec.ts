@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +16,8 @@ describe('AuthService Unit Tests', () => {
   let authService: AuthService;
   let usersService: jest.Mocked<Partial<UsersService>>;
   let jwtService: jest.Mocked<Partial<JwtService>>;
+  let emailService: jest.Mocked<Partial<EmailService>>;
+  let configService: jest.Mocked<Partial<ConfigService>>;
 
   const mockUser: any = {
     _id: { toString: () => 'user123_id' },
@@ -26,10 +30,21 @@ describe('AuthService Unit Tests', () => {
     usersService = {
       findByEmail: jest.fn(),
       create: jest.fn(),
+      saveResetToken: jest.fn(),
+      findByResetToken: jest.fn(),
+      updatePasswordAndClearToken: jest.fn(),
     };
 
     jwtService = {
       sign: jest.fn().mockReturnValue('mocked_jwt_token'),
+    };
+
+    emailService = {
+      sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+    };
+
+    configService = {
+      get: jest.fn().mockReturnValue('http://localhost:3000'),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -37,6 +52,8 @@ describe('AuthService Unit Tests', () => {
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
+        { provide: EmailService, useValue: emailService },
+        { provide: ConfigService, useValue: configService },
       ],
     }).compile();
 

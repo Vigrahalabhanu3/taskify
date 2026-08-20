@@ -54,7 +54,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-xl border border-slate-100">
+    <div className="w-full max-w-md p-5 sm:p-8 bg-white rounded-3xl shadow-xl border border-slate-100">
       <div className="mb-8 text-center sm:text-left">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome Back! 👋</h2>
         <p className="text-sm text-slate-500 mt-1">Sign in to your Taskify account to manage your tasks</p>
@@ -91,9 +91,9 @@ export function LoginForm() {
             <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
             <span>Remember me</span>
           </label>
-          <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-700">
+          <Link href="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-700">
             Forgot password?
-          </a>
+          </Link>
         </div>
 
         <Button type="submit" variant="primary" className="w-full py-3 text-base" isLoading={isLoading}>

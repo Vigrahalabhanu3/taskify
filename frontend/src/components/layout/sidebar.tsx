@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Tasks', href: '/tasks', icon: CheckSquare },
-  { label: 'Calendar', href: '#', icon: Calendar, disabled: true },
-  { label: 'Profile', href: '#', icon: User, disabled: true },
-  { label: 'Settings', href: '#', icon: Settings, disabled: true },
+  { label: 'Calendar', href: '/calendar', icon: Calendar },
+  { label: 'Profile', href: '/profile', icon: User },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -22,18 +22,6 @@ export function Sidebar() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || (item.href === '/tasks' && pathname.startsWith('/tasks'));
-
-          if (item.disabled) {
-            return (
-              <div
-                key={item.label}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 cursor-not-allowed select-none"
-              >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </div>
-            );
-          }
 
           return (
             <Link

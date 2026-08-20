@@ -84,11 +84,16 @@ export function TaskForm({ initialData, onSubmit, isLoading = false, onCancel }:
   };
 
   const handleFormSubmit = async (data: TaskFormData) => {
-    await onSubmit({
-      ...data,
-      dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
+    const payload: CreateTaskInput = {
+      title: data.title,
+      description: data.description && data.description.trim() !== '' ? data.description : undefined,
+      status: data.status,
+      priority: data.priority,
+      dueDate: data.dueDate && data.dueDate.trim() !== '' ? new Date(data.dueDate).toISOString() : undefined,
+      location: data.location && data.location.trim() !== '' ? data.location : undefined,
       attachments,
-    });
+    };
+    await onSubmit(payload);
   };
 
   return (

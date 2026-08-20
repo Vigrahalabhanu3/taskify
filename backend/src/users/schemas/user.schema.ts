@@ -13,6 +13,12 @@ export class User {
 
   @Prop({ required: true, select: false })
   password: string;
+
+  @Prop({ select: false })
+  resetPasswordToken?: string;
+
+  @Prop({ select: false })
+  resetPasswordExpires?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
