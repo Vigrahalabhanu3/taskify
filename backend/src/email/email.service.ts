@@ -8,28 +8,23 @@ export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('SMTP_HOST');
-    const port = this.configService.get<number>('SMTP_PORT', 587);
+    const host = this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com');
+    const port = Number(this.configService.get<number>('SMTP_PORT', 587));
     const user = this.configService.get<string>('SMTP_USER');
-    const pass = this.configService.get<string>('SMTP_PASS');
+    let pass = this.configService.get<string>('SMTP_PASS');
 
-    if (host && user && pass && !user.includes('example.com') && pass !== 'testpass') {
-      const isGmail = host.includes('gmail.com');
-      this.transporter = nodemailer.createTransport(
-        isGmail
-          ? {
-              service: 'gmail',
-              auth: { user, pass },
-              tls: { rejectUnauthorized: false },
-            }
-          : {
-              host,
-              port,
-              secure: port === 465,
-              auth: { user, pass },
-              tls: { rejectUnauthorized: false },
-            },
-      );
+    if (pass) {
+      pass = pass.replace(/\s+/g, '');
+    }
+
+    if (user && pass && !user.includes('example.com') && pass !== 'testpass') {
+      this.transporter = nodemailer.createTransport({
+        host: host || 'smtp.gmail.com',
+        port: port || 587,
+        secure: port === 465,
+        auth: { user, pass },
+        tls: { rejectUnauthorized: false },
+      });
       this.logger.log(`SMTP transporter initialized successfully for ${user}`);
     } else {
       this.logger.log('SMTP configuration in test/fallback mode. Emails will be logged to console.');
@@ -61,7 +56,7 @@ export class EmailService {
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:24px; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);">
-
+          
           <!-- Header Banner -->
           <tr>
             <td style="background:linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%); padding:40px 30px; text-align:center; color:#ffffff;">
@@ -145,7 +140,7 @@ export class EmailService {
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:24px; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);">
-
+          
           <!-- Header Banner (Emerald Celebration Gradient) -->
           <tr>
             <td style="background:linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%); padding:40px 30px; text-align:center; color:#ffffff;">
@@ -223,7 +218,7 @@ export class EmailService {
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:24px; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);">
-
+          
           <!-- Header Banner (Security Purple Gradient) -->
           <tr>
             <td style="background:linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #7c3aed 100%); padding:40px 30px; text-align:center; color:#ffffff;">
@@ -283,17 +278,42 @@ export class EmailService {
   }
 
   private async sendMail(to: string, subject: string, html: string) {
-    if (!this.transporter) {
+    const user = this.configService.get<string>('SMTP_USER');
+    let pass = this.configService.get<string>('SMTP_PASS');
+    if (pass) pass = pass.replace(/\s+/g, '');
+
+    if (!user || !pass || user.includes('example.com') || pass === 'testpass') {
       this.logger.log(`📧 [FALLBACK EMAIL DISPATCH] To: ${to} | Subject: ${subject}`);
       return;
     }
 
+    const from = this.configService.get<string>('EMAIL_FROM') || `"Taskify" <${user}>`;
+
+    // 1. Try Primary Transporter (configured from constructor)
     try {
-      const from = this.configService.get<string>('EMAIL_FROM') || '"Taskify" <banuvigrahala@gmail.com>';
-      await this.transporter.sendMail({ from, to, subject, html });
-      this.logger.log(`Email successfully dispatched to ${to}`);
-    } catch (error: any) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
+      if (this.transporter) {
+        await this.transporter.sendMail({ from, to, subject, html });
+        this.logger.log(`Email successfully dispatched to ${to}`);
+        return;
+      }
+    } catch (primaryErr: any) {
+      this.logger.warn(`Primary SMTP dispatch failed: ${primaryErr.message}. Retrying via fallback port 465 SSL...`);
+    }
+
+    // 2. Fallback Transporter (Port 465 Direct SSL)
+    try {
+      const fallbackTransporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user, pass },
+        tls: { rejectUnauthorized: false },
+      });
+
+      await fallbackTransporter.sendMail({ from, to, subject, html });
+      this.logger.log(`Email successfully dispatched via fallback SSL to ${to}`);
+    } catch (fallbackErr: any) {
+      this.logger.error(`Failed to send email to ${to}: ${fallbackErr.message}`);
     }
   }
 }
