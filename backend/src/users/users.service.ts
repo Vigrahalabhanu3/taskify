@@ -13,7 +13,18 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email: email.toLowerCase() }).select('+password').exec();
+    if (!email) return null;
+    const cleanEmail = email.trim().toLowerCase();
+    const escaped = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return this.userModel
+      .findOne({
+        $or: [
+          { email: cleanEmail },
+          { email: { $regex: `^${escaped}$`, $options: 'i' } },
+        ],
+      })
+      .select('+password')
+      .exec();
   }
 
   async findById(id: string): Promise<UserDocument | null> {
@@ -23,18 +34,16 @@ export class UsersService {
   async findByResetToken(token: string): Promise<UserDocument | null> {
     if (!token) return null;
     const cleanToken = decodeURIComponent(token.trim());
-    
+
     let user = await this.userModel
-      .findOne({ resetPasswordToken: cleanToken })
+      .findOne({
+        $or: [
+          { resetPasswordToken: cleanToken },
+          { resetPasswordToken: token.trim() },
+        ],
+      })
       .select('+password')
       .exec();
-
-    if (!user) {
-      user = await this.userModel
-        .findOne({ resetPasswordToken: token.trim() })
-        .select('+password')
-        .exec();
-    }
 
     if (user && user.resetPasswordExpires) {
       const expiresTime = new Date(user.resetPasswordExpires).getTime();
