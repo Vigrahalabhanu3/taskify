@@ -4,7 +4,7 @@ import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt', () => ({
@@ -126,6 +126,96 @@ describe('AuthService Unit Tests', () => {
           password: 'Password123!',
         }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should generate reset token and send email for an existing user request', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      (usersService.saveResetToken as jest.Mock).mockResolvedValue(undefined);
+      (emailService.sendPasswordResetEmail as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await authService.forgotPassword({
+        email: 'nageswari@email.com',
+      });
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith('nageswari@email.com');
+      expect(usersService.create).not.toHaveBeenCalled();
+      expect(usersService.saveResetToken).toHaveBeenCalledWith(
+        'user123_id',
+        expect.any(String),
+        expect.any(Date),
+      );
+      expect(emailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+        'nageswari@email.com',
+        'Nageswari',
+        expect.stringContaining('token='),
+      );
+      expect(result).toEqual({
+        success: true,
+        message: 'If an account exists for this email, password reset instructions have been sent.',
+      });
+    });
+
+    it('should not create user or reset token and return generic success for non-existing user reset request', async () => {
+      (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
+
+      const result = await authService.forgotPassword({
+        email: 'nonexistent@email.com',
+      });
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith('nonexistent@email.com');
+      expect(usersService.create).not.toHaveBeenCalled();
+      expect(usersService.saveResetToken).not.toHaveBeenCalled();
+      expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'If an account exists for this email, password reset instructions have been sent.',
+      });
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should successfully reset password for valid token', async () => {
+      (usersService.findByResetToken as jest.Mock).mockResolvedValue(mockUser);
+      (usersService.updatePasswordAndClearToken as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await authService.resetPassword({
+        token: 'valid_reset_token',
+        password: 'NewSecurePassword123!',
+      });
+
+      expect(usersService.findByResetToken).toHaveBeenCalledWith('valid_reset_token');
+      expect(usersService.updatePasswordAndClearToken).toHaveBeenCalledWith(
+        'user123_id',
+        'hashed_password_123',
+      );
+      expect(result).toEqual({
+        success: true,
+        message: 'Password reset successful. You may now log in with your new password.',
+      });
+    });
+
+    it('should throw BadRequestException for invalid token', async () => {
+      (usersService.findByResetToken as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        authService.resetPassword({
+          token: 'invalid_token',
+          password: 'NewSecurePassword123!',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for expired token', async () => {
+      (usersService.findByResetToken as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        authService.resetPassword({
+          token: 'expired_token',
+          password: 'NewSecurePassword123!',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

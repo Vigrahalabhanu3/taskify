@@ -87,37 +87,29 @@ export class AuthService {
       throw new BadRequestException('Email address is required');
     }
 
-    let user = await this.usersService.findByEmail(cleanEmail);
-    if (!user) {
-      this.logger.log(`Creating user record for password reset request on: ${cleanEmail}`);
-      const randomPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
-      user = await this.usersService.create({
-        name: cleanEmail.split('@')[0],
-        email: cleanEmail,
-        password: randomPassword,
-      });
+    const user = await this.usersService.findByEmail(cleanEmail);
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetExpires = new Date(Date.now() + 24 * 3600000); // 24 hours validity
+
+      await this.usersService.saveResetToken(user._id.toString(), resetToken, resetExpires);
+
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        process.env.FRONTEND_URL ||
+        'https://taskify-ei2ph9pta-bhanuprasad-s-projects.vercel.app';
+      const resetUrl = `${frontendUrl.replace(/\/$/, '')}/reset-password?token=${resetToken}`;
+
+      // Non-blocking async email dispatch so HTTP response returns instantly
+      this.emailService
+        .sendPasswordResetEmail(user.email, user.name || 'Taskify User', resetUrl)
+        .then(() => this.logger.log(`Password reset email dispatched successfully to ${user.email}`))
+        .catch((err: any) => this.logger.error(`Error sending password reset email: ${err.message}`));
     }
-
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 24 * 3600000); // 24 hours validity
-
-    await this.usersService.saveResetToken(user._id.toString(), resetToken, resetExpires);
-
-    const frontendUrl =
-      this.configService.get<string>('FRONTEND_URL') ||
-      process.env.FRONTEND_URL ||
-      'https://taskify-ei2ph9pta-bhanuprasad-s-projects.vercel.app';
-    const resetUrl = `${frontendUrl.replace(/\/$/, '')}/reset-password?token=${resetToken}`;
-
-    // Non-blocking async email dispatch so HTTP response returns instantly
-    this.emailService
-      .sendPasswordResetEmail(user.email, user.name || 'Taskify User', resetUrl)
-      .then(() => this.logger.log(`Password reset email dispatched successfully to ${user.email}`))
-      .catch((err: any) => this.logger.error(`Error sending password reset email: ${err.message}`));
 
     return {
       success: true,
-      message: 'Password reset instructions have been sent to your email.',
+      message: 'If an account exists for this email, password reset instructions have been sent.',
     };
   }
 
