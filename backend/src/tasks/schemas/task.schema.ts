@@ -21,10 +21,10 @@ export class Task {
   @Prop({ trim: true, default: '' })
   description: string;
 
-  @Prop({ required: true, enum: TaskStatus, default: TaskStatus.TODO, index: true })
+  @Prop({ type: String, required: true, enum: TaskStatus, default: TaskStatus.TODO, index: true })
   status: TaskStatus;
 
-  @Prop({ required: true, enum: TaskPriority, default: TaskPriority.MEDIUM, index: true })
+  @Prop({ type: String, required: true, enum: TaskPriority, default: TaskPriority.MEDIUM, index: true })
   priority: TaskPriority;
 
   @Prop({ type: Date, required: false, index: true })

@@ -33,6 +33,14 @@ export class FilterTaskDto {
   endDate?: string;
 
   @IsOptional()
+  @IsDateString()
+  dueDateFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueDateTo?: string;
+
+  @IsOptional()
   @IsString()
   search?: string;
 

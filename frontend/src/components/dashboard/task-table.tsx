@@ -9,8 +9,7 @@ import { WeatherWidget } from '../weather/weather-widget';
 import { EmptyState } from '../ui/empty-state';
 import { TableSkeleton } from '../ui/skeleton';
 import { formatDate } from '@/lib/utils';
-import { Edit2, Trash2, Eye, MapPin, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
-import { useState } from 'react';
+import { Edit2, Trash2, Eye, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TaskStatus } from '@/types/task.types';
 
 interface TaskTableProps {
@@ -18,7 +17,7 @@ interface TaskTableProps {
 }
 
 export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
-  const { search, status, priority, startDate, endDate, page, limit, setPage } = useFilterStore();
+  const { search, status, priority, startDate, endDate, sortBy, order, page, limit, setPage } = useFilterStore();
 
   const { data, isLoading, isError } = useTasksQuery({
     page,
@@ -28,11 +27,12 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
     priority,
     startDate,
     endDate,
+    sortBy,
+    order,
   });
 
   const updateMutation = useUpdateTaskMutation();
   const deleteMutation = useDeleteTaskMutation();
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const tasks = data?.data || [];
   const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
@@ -49,7 +49,6 @@ export function TaskTable({ onOpenCreateModal }: TaskTableProps) {
   const handleDelete = (taskId: string) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       deleteMutation.mutate(taskId);
-      setActiveMenuId(null);
     }
   };
 

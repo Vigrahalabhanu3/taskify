@@ -40,7 +40,19 @@ export class TasksService {
   }
 
   async findAll(filterDto: FilterTaskDto, userId: string) {
-    const { page = 1, limit = 10, status, priority, startDate, endDate, search, sortBy = 'createdAt', order = 'desc' } = filterDto;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      priority,
+      startDate,
+      endDate,
+      dueDateFrom,
+      dueDateTo,
+      search,
+      sortBy = 'createdAt',
+      order = 'desc',
+    } = filterDto;
 
     const query: any = { userId: new Types.ObjectId(userId) };
 
@@ -52,13 +64,16 @@ export class TasksService {
       query.priority = priority;
     }
 
-    if (startDate || endDate) {
+    const effectiveStartDate = startDate || dueDateFrom;
+    const effectiveEndDate = endDate || dueDateTo;
+
+    if (effectiveStartDate || effectiveEndDate) {
       query.dueDate = {};
-      if (startDate) {
-        query.dueDate.$gte = new Date(startDate);
+      if (effectiveStartDate) {
+        query.dueDate.$gte = new Date(effectiveStartDate);
       }
-      if (endDate) {
-        query.dueDate.$lte = new Date(endDate);
+      if (effectiveEndDate) {
+        query.dueDate.$lte = new Date(effectiveEndDate);
       }
     }
 
@@ -76,13 +91,17 @@ export class TasksService {
       this.taskModel.countDocuments(query).exec(),
     ]);
 
+    const totalPages = Math.ceil(total / limit) || 1;
+
     return {
       tasks,
       meta: {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit) || 1,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     };
   }

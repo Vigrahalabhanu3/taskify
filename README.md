@@ -15,20 +15,23 @@
    - Strict database-level scoping (`{ _id: taskId, userId: req.user.id }`).
    - Prevention of cross-tenant data leaks (attempting to access another user's task ID yields `404 Not Found`).
    - Centralized NestJS `HttpExceptionFilter` and DTO validation via `class-validator` / `class-transformer`.
+   - File upload security: 5MB size limit and explicit MIME type restriction interceptor.
    - Secure CORS setup.
-3. **Task Management (Full CRUD)**:
+3. **Task Management (Full CRUD & Sorting)**:
    - Create, list, detail view, edit, and delete tasks.
    - Status tracking (`TODO`, `IN_PROGRESS`, `DONE`) with quick toggle.
    - Priority levels (`LOW`, `MEDIUM`, `HIGH`).
    - Due dates with relative time calculations.
-   - Server-side pagination, search, status/priority filtering, and date range filters.
+   - Server-side pagination (`page`, `limit`, `totalPages`, `hasNextPage`, `hasPreviousPage`), search, status/priority filtering, date range filters (`dueDateFrom`, `dueDateTo`), and explicit sorting UI controls (`sortBy`, `order`).
 4. **Third-Party Integrations**:
-   - **Cloudinary File Storage**: Secure attachment uploader (images, PDFs, documents).
+   - **Cloudinary File Storage**: Secure attachment uploader (images, PDFs, documents up to 5MB).
    - **OpenWeatherMap Weather Lookup**: Live weather forecast widget based on task `location`.
    - **Email Service (Nodemailer / Resend)**: Non-blocking async emails sent on task creation and task completion (`DONE`).
 5. **Dashboard Analytics & UI**:
    - Real-time Stats Cards (Total Tasks, To Do, In Progress, Done).
    - Responsive modern UI design with purple accents, glassmorphism, loading skeletons, empty states, and modal dialogs.
+6. **Automated Testing Suite**:
+   - Jest unit and security boundary tests covering `AuthService`, `TasksService` CRUD & tenant isolation, and `WeatherService`.
 
 ---
 
@@ -38,25 +41,27 @@
 Task-Flow/
 ├── backend/                  # NestJS REST API Backend
 │   ├── src/
-│   │   ├── auth/            # Auth Controller, Service, JWT Strategy & DTOs
+│   │   ├── auth/            # Auth Controller, Service, JWT Strategy & Unit Tests
 │   │   ├── users/           # User Model Schema & Service
-│   │   ├── tasks/           # Task Model, CRUD Controller, Service & DTOs
-│   │   ├── upload/          # Cloudinary File Upload Provider & Controller
-│   │   ├── weather/         # OpenWeatherMap Service & Controller
+│   │   ├── tasks/           # Task Model, CRUD Controller, Service & Security Tests
+│   │   ├── upload/          # Cloudinary File Upload Provider, Security Interceptor & Controller
+│   │   ├── weather/         # OpenWeatherMap Service, Controller & Tests
 │   │   ├── email/           # Nodemailer Email Notification Service
 │   │   ├── common/          # Filters, Guards, Decorators, Pipes & Interfaces
 │   │   └── config/          # Environment variable loaders
 │   ├── .env.example
+│   ├── .gitignore
 │   └── package.json
 └── frontend/                 # Next.js App Router Frontend
     ├── src/
     │   ├── app/             # (auth), (dashboard) pages & layouts
-    │   ├── components/      # UI, Auth, Dashboard, Task & Weather components
+    │   ├── components/      # UI, Auth, Dashboard, Task, Filters & Weather components
     │   ├── hooks/           # TanStack React Query custom hooks
     │   ├── lib/             # Axios API client, Zustand stores & utils
-    │   ├── store/           # Filter & UI state stores
+    │   ├── store/           # Filter, Sorting & UI state stores
     │   └── types/           # TypeScript interfaces & types
     ├── .env.example
+    ├── .gitignore
     └── package.json
 ```
 
@@ -69,12 +74,13 @@ Task-Flow/
 - npm >= 9.0.0
 - MongoDB instance (MongoDB Atlas or local `mongodb://localhost:27017/taskify`)
 
-### 1. Backend Setup
+### 1. Backend Setup & Tests
 ```bash
 cd backend
 npm install
 cp .env.example .env
-npm run start:dev
+npm test            # Run automated Jest unit & security tests
+npm run start:dev   # Start backend development server
 ```
 Backend runs at `http://localhost:4000`.
 
@@ -83,7 +89,7 @@ Backend runs at `http://localhost:4000`.
 cd frontend
 npm install
 cp .env.example .env.local
-npm run dev
+npm run dev         # Start Next.js dev server
 ```
 Frontend runs at `http://localhost:3000`.
 
@@ -126,13 +132,13 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 | :--- | :--- | :--- | :--- |
 | `POST` | `/auth/register` | Register a new user | No |
 | `POST` | `/auth/login` | Login user & get JWT | No |
-| `GET` | `/tasks` | List user's tasks (with filters & pagination) | Yes (Bearer) |
+| `GET` | `/tasks` | List user's tasks (filters, pagination, sorting) | Yes (Bearer) |
 | `POST` | `/tasks` | Create a new task (triggers creation email) | Yes (Bearer) |
 | `GET` | `/tasks/stats` | Get task counts for dashboard overview | Yes (Bearer) |
 | `GET` | `/tasks/:id` | Get single task details (tenant isolated) | Yes (Bearer) |
 | `PATCH` | `/tasks/:id` | Update task (triggers completion email if DONE) | Yes (Bearer) |
 | `DELETE` | `/tasks/:id` | Delete task | Yes (Bearer) |
-| `POST` | `/upload` | Upload attachment file to Cloudinary | Yes (Bearer) |
+| `POST` | `/upload` | Upload attachment file to Cloudinary (5MB limit) | Yes (Bearer) |
 | `GET` | `/weather` | Fetch current weather for location | Yes (Bearer) |
 
 ---
@@ -140,13 +146,13 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 ## 🚀 Deployment Guide
 
 - **Frontend (Vercel)**:
-  1. Import `frontend` folder into Vercel.
+  1. Import `frontend` directory into Vercel.
   2. Set `NEXT_PUBLIC_API_URL` to your production backend URL.
   3. Deploy.
 - **Backend (Render / Railway / Fly.io)**:
-  1. Import `backend` repository.
+  1. Import `backend` directory.
   2. Set build command: `npm run build`, start command: `node dist/main.js`.
-  3. Configure environment variables (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`, `OPENWEATHER_*`, `SMTP_*`).
+  3. Configure production environment variables (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`, `OPENWEATHER_*`, `SMTP_*`).
 - **Database**: MongoDB Atlas Cluster with user index enabled.
 
 ---

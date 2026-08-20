@@ -1,7 +1,7 @@
 'use client';
 
 import { useFilterStore } from '@/store/use-filter-store';
-import { Search, X, Calendar } from 'lucide-react';
+import { Search, X, Calendar, ArrowUpDown } from 'lucide-react';
 import { TaskStatus, TaskPriority } from '@/types/task.types';
 
 export function TaskFilters() {
@@ -11,19 +11,24 @@ export function TaskFilters() {
     priority,
     startDate,
     endDate,
+    sortBy,
+    order,
     setSearch,
     setStatus,
     setPriority,
     setDateRange,
+    setSortBy,
+    setOrder,
     resetFilters,
   } = useFilterStore();
 
-  const hasActiveFilters = search || status || priority || startDate || endDate;
+  const hasActiveFilters =
+    search || status || priority || startDate || endDate || sortBy !== 'createdAt' || order !== 'desc';
 
   return (
     <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs mb-6">
       {/* Search Input */}
-      <div className="relative flex-1 min-w-[220px]">
+      <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           type="text"
@@ -65,6 +70,28 @@ export function TaskFilters() {
         <option value="MEDIUM">Medium Priority</option>
         <option value="HIGH">High Priority</option>
       </select>
+
+      {/* Sorting Dropdown */}
+      <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1">
+        <ArrowUpDown className="w-3.5 h-3.5 text-indigo-500 ml-1" />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="bg-transparent py-1 text-sm text-slate-700 focus:outline-none"
+        >
+          <option value="createdAt">Sort: Created Date</option>
+          <option value="dueDate">Sort: Due Date</option>
+          <option value="priority">Sort: Priority</option>
+          <option value="title">Sort: Title</option>
+        </select>
+        <button
+          onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
+          className="px-2 py-1 text-xs font-bold text-indigo-600 hover:bg-indigo-100/50 rounded-lg transition"
+          title={`Order: ${order.toUpperCase()}`}
+        >
+          {order.toUpperCase()}
+        </button>
+      </div>
 
       {/* Date Range Picker */}
       <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600">
