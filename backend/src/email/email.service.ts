@@ -8,25 +8,27 @@ export class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    const user = this.configService.get<string>('SMTP_USER');
-    let pass = this.configService.get<string>('SMTP_PASS');
+    const user =
+      this.configService.get<string>('SMTP_USER') ||
+      process.env.SMTP_USER ||
+      'banuvigrahala@gmail.com';
+    let pass =
+      this.configService.get<string>('SMTP_PASS') ||
+      process.env.SMTP_PASS ||
+      'vlzlhrkuqeqgwjlq';
 
     if (pass) {
       pass = pass.replace(/\s+/g, '');
     }
 
-    if (user && pass && !user.includes('example.com') && pass !== 'testpass') {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user, pass },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
-      });
-      this.logger.log(`Gmail transporter initialized successfully for ${user}`);
-    } else {
-      this.logger.log('SMTP configuration in test/fallback mode. Emails will be logged to console.');
-    }
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+    });
+    this.logger.log(`Gmail transporter initialized successfully for ${user}`);
   }
 
   async sendTaskCreatedNotification(toEmail: string, userName: string, taskTitle: string, dueDate?: string) {
@@ -276,14 +278,16 @@ export class EmailService {
   }
 
   private async sendMail(to: string, subject: string, html: string) {
-    const user = this.configService.get<string>('SMTP_USER');
-    let pass = this.configService.get<string>('SMTP_PASS');
-    if (pass) pass = pass.replace(/\s+/g, '');
+    const user =
+      this.configService.get<string>('SMTP_USER') ||
+      process.env.SMTP_USER ||
+      'banuvigrahala@gmail.com';
+    let pass =
+      this.configService.get<string>('SMTP_PASS') ||
+      process.env.SMTP_PASS ||
+      'vlzlhrkuqeqgwjlq';
 
-    if (!user || !pass || user.includes('example.com') || pass === 'testpass') {
-      this.logger.log(`📧 [FALLBACK EMAIL DISPATCH] To: ${to} | Subject: ${subject}`);
-      return;
-    }
+    if (pass) pass = pass.replace(/\s+/g, '');
 
     const from = this.configService.get<string>('EMAIL_FROM') || `"Taskify" <${user}>`;
 
